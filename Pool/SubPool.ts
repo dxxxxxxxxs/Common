@@ -29,7 +29,6 @@ export default class SubPool {
             if (!node.active) {
                 go = node;
                 go.setParent(this.myParent);
-                console.log(this.myParent.name);
             }
         })
         if (go == null) {
