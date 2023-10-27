@@ -29,4 +29,19 @@ export default class CCTools extends cc.Component {
         parent.addChild(node);
         return node;
     }
+
+    /**
+     * 将传入的邮箱地址变为（首字符+****+尾字符+@+首字符+****+尾字符）
+     * @param email 需要隐藏的邮箱地址
+     * @returns 
+     */
+    convertEmail(email: string): string {
+        const atIndex = email.indexOf('@'); // 获取邮箱中 @ 符号的索引位置
+        const firstChar = email.charAt(0); // 获取邮箱的首字符
+        const lastChar = email.charAt(atIndex - 1);
+        const firstChar2 = email.charAt(atIndex + 1);
+        const lastChar2 = email.charAt(email.length - 1);
+        const convertedEmail = `${firstChar}****${lastChar}@${firstChar2}****${lastChar2}`; // 拼接转换后的邮箱字符串
+        return convertedEmail;
+    }
 }
