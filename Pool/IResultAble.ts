@@ -5,13 +5,14 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
-const {ccclass, property} = cc._decorator;
+const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default abstract class IResultAble extends cc.Component {
     protected onLoad(): void {
-        this.node.on("OnSpawn",this.onSpawn);
-        this.node.on("UnSpawn",this.unSpawn);
+        this.node.on("OnSpawn", this.onSpawn);
+        this.node.on("UnSpawn", this.unSpawn);
+        this.node.on(cc.Event.EventTouch.TOUCH, this.onSpawn)
     }
     /**
      * 取出节点时执行

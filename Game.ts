@@ -28,6 +28,12 @@ export default class Game {
         //后续在这个里面控制请求头，需要与服务器沟通，更改请求头header
         this.Http.doPost(url, data, complete, error, header);
     }
+    /**
+     * 向服务器发送GET网络请求
+     * @param url 地址
+     * @param reqData 要传输的数据
+     * @returns 
+     */
     public static async doGetAsync<T>(url: string, reqData: any): Promise<T> {
         return new Promise<T>((resolve) => {
             this.doGet(url, reqData, (data: any) => {
@@ -46,6 +52,12 @@ export default class Game {
             }, null);
         })
     }
+    /**
+     * 向服务器发送POST网络请求
+     * @param url 地址
+     * @param reqData 要传输的数据
+     * @returns 
+     */
     public static async doPostAsync<T>(url: string, reqData: any): Promise<T> {
         return new Promise<T>((resolve) => {
             this.doGet(url, reqData, (data: any) => {
