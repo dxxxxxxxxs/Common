@@ -10,16 +10,20 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export default abstract class IResultAble extends cc.Component {
     protected onLoad(): void {
-        this.node.on("OnSpawn", this.onSpawn);
-        this.node.on("UnSpawn", this.unSpawn);
-        this.node.on(cc.Event.EventTouch.TOUCH, this.onSpawn)
+        this.node.on("OnSpawn", this.onSpawn).bind(this);
+        this.node.on("UnSpawn", this.unSpawn).bind(this);
     }
     /**
-     * 取出节点时执行
+     * 取出节点时执行,未完善，不要用
      */
     public abstract onSpawn();
     /**
-     * 收回节点时执行
+     * 收回节点时执行，未完善，不要用
      */
     public abstract unSpawn();
+
+    protected onDestroy(): void {
+        this.node.off("OnSpawn", this.onSpawn);
+        this.node.off("UnSpawn", this.unSpawn);
+    }
 }

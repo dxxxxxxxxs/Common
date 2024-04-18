@@ -9,6 +9,7 @@ import { AudioManager } from "./Audio/AudioManager";
 import { EventManager } from "./Event/EventManager";
 import HttpManager from "./Http/HttpManager";
 import ObjectPool from "./Pool/ObjectPool";
+import { StorageManager } from "./Storage/StorageManager";
 
 
 const { ccclass, property } = cc._decorator;
@@ -19,6 +20,7 @@ export default class Game {
     public static get Audio() { return AudioManager.Instance }
     public static get ObjectPool() { return ObjectPool.Instance }
     public static get Http() { return HttpManager.Instance }
+    public static get Storage() { return StorageManager.Instance }
 
     private static doGet(url: string, data?: any, complete?: Function, error?: Function, header?: { name: string, value: string }) {
         //后续在这个里面控制请求头，需要与服务器沟通，更改请求头header
