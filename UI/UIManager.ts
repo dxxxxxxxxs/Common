@@ -8,7 +8,7 @@
 import BundleManager from "../Bundle/BundleManager";
 import Game from "../Game";
 import CCTools from "../Tools/CCTools";
-import { UIView } from "./UIView";
+import { UIShowTypes, UIView } from "./UIView";
 /**
  * UIManager界面管理类
  * 
@@ -68,7 +68,7 @@ export class UIManager {
     private UIConf: { [key: number]: UIConf } = {};
 
     /** 所有UI层级 */
-    private layers: Map<string, Node> = new Map<string, Node>();
+    private layers: Map<string, cc.Node> = new Map<string, cc.Node>();
     /** UI Root Canvas */
     private uiRootCanvasNode: cc.Node;
 
@@ -204,7 +204,7 @@ export class UIManager {
                 if (err) {
                     // Log.print(`getOrCreateUI loadRes ${uiId} faile, path: ${uiPath} error: ${err}`);
                     // completeCallback(null);
-                    BundleManager.load(uiPath, (err: Error, prefab: cc.Prefab) => {
+                    uiBundle.load(uiPath, (err: Error, prefab: cc.Prefab) => {
                         if (err) {
                             console.error(`getOrCreateUI loadRes ${uiId} faile, path: ${uiPath} error: ${err}`);
                             completeCallback(null);
@@ -218,13 +218,13 @@ export class UIManager {
             });
         }
         if (this.UIConf[uiId].bundle) {
-            if (App.bundles.get(this.UIConf[uiId].bundle)) {
-                uiBundle = App.bundles.get(this.UIConf[uiId].bundle);
+            if (Game.bundles.get(this.UIConf[uiId].bundle)) {
+                uiBundle = Game.bundles.get(this.UIConf[uiId].bundle);
                 complete();
             } else {
                 cc.assetManager.loadBundle(this.UIConf[uiId].bundle, (err, bundle) => {
                     if (!err) {
-                        App.bundles.set(this.UIConf[uiId].bundle, bundle);
+                        Game.bundles.set(this.UIConf[uiId].bundle, bundle);
                         uiBundle = bundle;
                         complete();
                     };
@@ -235,11 +235,11 @@ export class UIManager {
         }
     }
 
-    private compleateCreateUI(uiId: number, uiPath: string, uiView: UIView, prefab: Prefab, completeCallback: (uiView: UIView) => void, uiArgs: any) {
+    private compleateCreateUI(uiId: number, uiPath: string, uiView: UIView, prefab: cc.Prefab, completeCallback: (uiView: UIView) => void, uiArgs: any) {
         // 检查实例化错误
-        let uiNode: Node = instantiate(prefab);
+        let uiNode: cc.Node = cc.instantiate(prefab);
         if (null == uiNode) {
-            Log.print(`getOrCreateUI instantiate ${uiId} faile, path: ${uiPath}`);
+            console.log(`getOrCreateUI instantiate ${uiId} faile, path: ${uiPath}`);
             completeCallback(null);
             // resLoader.release(prefab);
             return;
@@ -249,7 +249,7 @@ export class UIManager {
         // 设置一下uiId
         uiView.uiId = uiId;
         if (null == uiView) {
-            Log.print(`getOrCreateUI getComponent ${uiId} faile, path: ${uiPath}`);
+            console.log(`getOrCreateUI getComponent ${uiId} faile, path: ${uiPath}`);
             uiNode.destroy();
             completeCallback(null);
             // resLoader.release(prefab);
@@ -282,17 +282,17 @@ export class UIManager {
         // 快速关闭界面的设置，绑定界面中的background，实现快速关闭
         if (uiView.quickClose) {
             let backGround = uiView.node.getChildByName('background');
-            if (!backGround) {
-                Utils.addNode(uiView.node, 'background');
-            }
-            backGround.targetOff(Node.EventType.TOUCH_START);
-            backGround.on(Node.EventType.TOUCH_START, (event: Event) => {
+            // if (!backGround) {
+            //     Utils.addNode(uiView.node, 'background');
+            // }
+            backGround.targetOff(cc.Node.EventType.TOUCH_START);
+            backGround.on(cc.Node.EventType.TOUCH_START, (event: Event) => {
                 this.close(uiView);
             }, backGround);
         }
 
         // 添加到场景中
-        let child = director.getScene().getChildByName('Canvas');
+        let child = cc.director.getScene().getChildByName('Canvas');
         let nodeName = ''
         switch (uiView.showType) {
             case UIShowTypes.UIFullScreen:
@@ -307,16 +307,13 @@ export class UIManager {
             default:
                 break;
         }
-        child = director.getScene().getChildByName('Canvas').getChildByName(nodeName);
+        child = cc.director.getScene().getChildByName('Canvas').getChildByName(nodeName);
         child.addChild(uiView.node);
 
-        if (!GlobalConfig.isRelease) {
-            let time = new Date().toLocaleString();
-            Log.print("%c[open-view %s]>>> %s", "color:blue", time, uiInfo.uiView.name);
-        }
-
-        // 刷新其他UI
-        this.updateUI();
+        
+        
+        let time = new Date().toLocaleString();
+        console.log("%c[open-view %s]>>> %s", "color:blue", time, uiInfo.uiView.name);
 
         // 从那个界面打开的
         let fromUIID = 0;
@@ -329,10 +326,10 @@ export class UIManager {
             this.uiOpenBeforeDelegate(uiId, fromUIID);
         }
 
-        //阿拉伯语处理
-        if (App.isAr()) {
-            this.arabicUI(uiView.node);
-        }
+        // //阿拉伯语处理
+        // if (App.isAr()) {
+        //     this.arabicUI(uiView.node);
+        // }
 
         // 执行onOpen回调
         uiView.onOpen(fromUIID, uiArgs);
@@ -393,7 +390,7 @@ export class UIManager {
         this.getOrCreateUI(uiId, (uiView: UIView): void => {
             // 如果界面已经被关闭或创建失败
             if (uiInfo.isClose || null == uiView) {
-                Log.print(`getOrCreateUI ${uiId} faile!
+                console.warn(`getOrCreateUI ${uiId} faile!
                         close state : ${uiInfo.isClose} , uiView : ${uiView}`);
                 this.isOpening = false;
                 this.openingUIId = null;
@@ -412,7 +409,7 @@ export class UIManager {
                     uiInfo.uiArgs.onOpenCallback(uiView);
                 }
             } catch (error) {
-                Log.error(error)
+                console.error(error)
             }
 
             this.isOpening = false;
@@ -448,7 +445,7 @@ export class UIManager {
             if (closeUI) {
                 // 插入待关闭队列
                 if (this.UICloseQueue.find((obj) => { return obj.uiId === closeUI.uiId }) != null) {
-                    Log.print(`${closeUI.uiId} 已在等待关闭中`);
+                    console.log(`${closeUI.uiId} 已在等待关闭中`);
                     return;
                 }
                 this.UICloseQueue.push(closeUI);
@@ -491,7 +488,7 @@ export class UIManager {
 
         let preUIInfo = this.UIStack[uiCount - 2];
         // 处理显示模式
-        this.updateUI();
+        //this.updateUI();
         let close = () => {
             this.isClosing = false;
             // 显示之前的界面
@@ -510,13 +507,14 @@ export class UIManager {
             if (uiView.cache) {
                 this.UICache[uiId] = uiView;
                 uiView.node.removeFromParent();
-                Log.print(`uiView removeFromParent ${uiInfo.uiId}`);
+                console.log(`uiView removeFromParent ${uiInfo.uiId}`);
             } else {
                 uiView.node.destroy();
-                if (!GlobalConfig.isRelease) {
-                    let time = new Date().toLocaleString();
-                    Log.print("%c[close-view %s]>>> %s", "color:gray", time, uiInfo.uiView.name);
-                }
+                // if (!GlobalConfig.isRelease) {
+                // }
+                
+                let time = new Date().toLocaleString();
+                console.log("%c[close-view %s]>>> %s", "color:gray", time, uiInfo.uiView.name);
             }
             this.autoExecNextUI();
         }
@@ -586,7 +584,7 @@ export class UIManager {
             }
         }
 
-        this.updateUI();
+        //this.updateUI();
         this.UIOpenQueue = [];
         this.UICloseQueue = [];
         bOpenSelf && this.open(uiId, uiArgs);
@@ -596,7 +594,7 @@ export class UIManager {
     public clearCache(): void {
         for (const key in this.UICache) {
             let ui = this.UICache[key];
-            if (isValid(ui.node)) {
+            if (cc.isValid(ui.node)) {
                 ui.node.destroy();
             }
         }
@@ -639,22 +637,22 @@ export class UIManager {
     }
 
     public initialize() {
-        this.layers = new Map<string, Node>();
-        this.uiRootCanvasNode = director.getScene().getChildByName('Canvas');
+        this.layers = new Map<string, cc.Node>();
+        this.uiRootCanvasNode = cc.director.getScene().getChildByName('Canvas');
         let designSize = this.uiRootCanvasNode.getComponent(cc.Canvas).designResolution;
-        uiLayers.forEach((layer) => {
-            if (this.layers[layer.layerName] == null) {
-                let layerNode = new Node(layer.layerName);
-                this.layers[layer.layerName] = layerNode;
-                let widget = layerNode.addComponent(Widget);
-                this.uiRootCanvasNode.addChild(layerNode);
-                layerNode.setContentSize(designSize);
-                widget.isAlignLeft = true;
-                widget.isAlignRight = true;
-                widget.isAlignBottom = true;
-                widget.isAlignTop = true;
-            }
-        });
+        // uilayer.forEach((layer) => {
+        //     if (this.layers[layer.layerName] == null) {
+        //         let layerNode = new cc.Node(layer.layerName);
+        //         this.layers[layer.layerName] = layerNode;
+        //         let widget = layerNode.addComponent(cc.Widget);
+        //         this.uiRootCanvasNode.addChild(layerNode);
+        //         layerNode.setContentSize(designSize);
+        //         widget.isAlignLeft = true;
+        //         widget.isAlignRight = true;
+        //         widget.isAlignBottom = true;
+        //         widget.isAlignTop = true;
+        //     }
+        // });
     }
 
     // public addAudioRoot() {

@@ -5,9 +5,6 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
-import BundleManager from "../Bundle/BundleManager";
-import IResultAble from "./IResultAble";
-
 const { ccclass, property } = cc._decorator;
 
 @ccclass

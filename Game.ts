@@ -16,11 +16,18 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class Game {
+    /** 事件管理器 */
     public static get Event() { return EventManager.Instance }
+    /** 音乐控制器 */
     public static get Audio() { return AudioManager.Instance }
+    /** 对象池 */
     public static get ObjectPool() { return ObjectPool.Instance }
+    /** http连接 */
     public static get Http() { return HttpManager.Instance }
+    /** 本地缓存 */
     public static get Storage() { return StorageManager.Instance }
+
+    public static bundles:Map<string,cc.AssetManager.Bundle>=new Map<string,cc.AssetManager.Bundle>();
 
     private static doGet(url: string, data?: any, complete?: Function, error?: Function, header?: { name: string, value: string }) {
         //后续在这个里面控制请求头，需要与服务器沟通，更改请求头header
@@ -62,7 +69,7 @@ export default class Game {
      */
     public static async doPostAsync<T>(url: string, reqData: any): Promise<T> {
         return new Promise<T>((resolve) => {
-            this.doGet(url, reqData, (data: any) => {
+            this.doPost(url, reqData, (data: any) => {
                 console.log(url + "Sucess=>", data);
                 //与服务器沟通返回的数据里面的错误类型，一般是0或者200表示成功，其他的为错
                 if (data.code == 0 || data.code == 200) {

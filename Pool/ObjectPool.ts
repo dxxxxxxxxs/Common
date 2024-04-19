@@ -6,7 +6,6 @@
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
 import BundleManager from "../Bundle/BundleManager";
-import IResultAble from "./IResultAble";
 import SubPool from "./SubPool";
 
 const { ccclass, property } = cc._decorator;
