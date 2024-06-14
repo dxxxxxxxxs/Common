@@ -6,7 +6,7 @@
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
 import BundleManager from "../Bundle/BundleManager";
-import Game from "../Game";
+import { Game } from "../Game";
 import CCTools from "../Tools/CCTools";
 import { UIShowTypes, UIView } from "./UIView";
 /**
@@ -190,7 +190,9 @@ export class UIManager {
         }
 
         // 找到UI配置
+        console.log(this.UIConf[uiId] + "ui配置");
         let uiPath = this.UIConf[uiId].prefab;
+        console.log(uiPath + "ui配置的路径");
         let uiBundle: cc.AssetManager.Bundle = null;
         if (null == uiPath) {
             completeCallback(null);
@@ -226,6 +228,7 @@ export class UIManager {
                     if (!err) {
                         Game.bundles.set(this.UIConf[uiId].bundle, bundle);
                         uiBundle = bundle;
+                        console.log("bundles中没有当前分包，设置进去");
                         complete();
                     };
                 })
@@ -310,8 +313,8 @@ export class UIManager {
         child = cc.director.getScene().getChildByName('Canvas').getChildByName(nodeName);
         child.addChild(uiView.node);
 
-        
-        
+
+
         let time = new Date().toLocaleString();
         console.log("%c[open-view %s]>>> %s", "color:blue", time, uiInfo.uiView.name);
 
@@ -512,7 +515,7 @@ export class UIManager {
                 uiView.node.destroy();
                 // if (!GlobalConfig.isRelease) {
                 // }
-                
+
                 let time = new Date().toLocaleString();
                 console.log("%c[close-view %s]>>> %s", "color:gray", time, uiInfo.uiView.name);
             }

@@ -5,17 +5,19 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
+import { UICF } from "../Scripts/GameConfig";
 import { AudioManager } from "./Audio/AudioManager";
 import { EventManager } from "./Event/EventManager";
 import HttpManager from "./Http/HttpManager";
 import ObjectPool from "./Pool/ObjectPool";
+import { uiManager } from "./UI/UIManager";
 import { wxManager } from "./WX/wxManager";
 
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export default class Game {
+export class Game {
     /** 事件管理器 */
     public static get Event() { return EventManager.Instance }
     /** 音乐控制器 */
@@ -85,5 +87,21 @@ export default class Game {
                 resolve(null);
             }, null);
         })
+    }
+
+    static initializeView(uiConf: any, uiConfMain?: any): void {
+        let CF = {}
+        if (uiConfMain) {
+            CF = Object.assign(uiConf, uiConfMain);
+        } else {
+            CF = uiConf;
+        }
+        uiManager.initUIConf(CF);
+    }
+
+
+    /**初始化游戏 */
+    static initialize() {
+        this.initializeView(UICF);
     }
 }

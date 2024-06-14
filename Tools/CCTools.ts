@@ -44,4 +44,10 @@ export default class CCTools extends cc.Component {
         const convertedEmail = `${firstChar}****${lastChar}@${firstChar2}****${lastChar2}`; // 拼接转换后的邮箱字符串
         return convertedEmail;
     }
+
+    /**寻找子物体 */
+    findChild(parent: cc.Node, name: string) {
+        parent.getChildByName(name);
+    }
+
 }

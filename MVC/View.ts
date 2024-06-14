@@ -27,7 +27,7 @@ export abstract class View {
     }
 
     /**获取model */
-    protected GetModel<T extends Model>(): T {
-        return MVC.GetModel<T>() as T;
+    protected GetModel<T extends Model>(constructor: new () => T): T {
+        return MVC.GetModel<T>(constructor) as T;
     }
 }
