@@ -31,11 +31,11 @@ export default class ObjectPool {
      * @param parent 节点创建出来后的父节点
      * @returns 一个异步的cc.node对象，需要用await接收
      */
-    public async Spawn(name: string, parent: cc.Node): Promise<cc.Node> {
+    public async Spawn(name: string, parent: cc.Node, bundleName: string): Promise<cc.Node> {
         return new Promise<cc.Node>(async (resovlve) => {
             let pool: SubPool = null;
             if (!this.pools.has(name)) {
-                await this.RegisterNew(name, parent);
+                await this.RegisterNew(name, parent, bundleName);
                 // pool = this.pools.get(name);
                 // resovlve(pool.Spawn());
             }
@@ -80,8 +80,8 @@ export default class ObjectPool {
      * @param name 对象池名字
      * @param parent 对象池中所有对象的父节点
      */
-    async RegisterNew(name: string, parent: cc.Node) {
-        let node = await BundleManager.load<cc.Prefab>(name, "ObjectPool");
+    async RegisterNew(name: string, parent: cc.Node, bundleName: string) {
+        let node = await BundleManager.load<cc.Prefab>("prefabs/" + name, bundleName);
         let pool = new SubPool(node, parent);
         this.pools.set(pool.poolName, pool);
     }

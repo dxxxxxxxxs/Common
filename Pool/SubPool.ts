@@ -40,6 +40,7 @@ export default class SubPool {
     public UnSpawn(node: cc.Node) {
         if (this.Contains(node)) {
             node.emit("UnSpawn");
+            node.removeFromParent();
             node.active = false;
         }
     }

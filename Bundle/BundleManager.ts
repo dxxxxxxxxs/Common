@@ -62,7 +62,7 @@ export default class BundleManager {
                         resovlve(null);
                     }
                     else {
-                        console.log("加载预制体成功");
+                        console.log("加载资源成功");
                         resovlve(result);
                     }
                 })
