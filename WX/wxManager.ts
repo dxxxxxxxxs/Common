@@ -22,4 +22,9 @@ export class wxManager {
             console.log(res);
         })
     }
+
+    /**获取窗口数据 */
+    getWindowInfo() {
+        return wx.getWindowInfo();
+    }
 }

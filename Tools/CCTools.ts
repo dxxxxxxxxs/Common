@@ -52,14 +52,16 @@ export default class CCTools extends cc.Component {
         return parent.getChildByName(name);
     }
 
-    /**添加点击事件 */
+    /**添加点击事件(已防止重复注册，但是还是需要在destory的时候取消点击事件) */
     static fixedClick(node: cc.Node, callback: Function, target: any) {
-        let button;
+        node.off("click", callback, target);
+        let button: cc.Button;
         if (node.getComponent(cc.Button)) {
             button = node.getComponent(cc.Button);
         } else {
             button = node.addComponent(cc.Button);
         }
+
         button.transition = cc.Button.Transition.SCALE;
         button.duration = 0.1;
         button.zoomScale = 1.1;
@@ -129,5 +131,42 @@ export default class CCTools extends cc.Component {
         console.log("父节点坐标" + newParent.position);
     }
 
+    /**
+     * 替换文字
+     * @param node 要替换的节点 
+     * @param label 传入的字符串
+     */
+    static fixLabel(node: cc.Node, label: string, isRichText: boolean = false) {
+        if (isRichText) {
+            if (node.getComponent(cc.RichText)) {
+                node.getComponent(cc.RichText).string = label;
+            } else {
+                node.addComponent(cc.RichText).string = label;
+            }
+        } else {
+            if (node.getComponent(cc.Label)) {
+                node.getComponent(cc.Label).string = label;
+            } else {
+                node.addComponent(cc.Label).string = label;
+            }
+        }
+    }
 
+
+    /**加载游戏主场景所需内容 */
+    static async loadGameScene() {
+        await BundleManager.loadBundle("Game");
+        await BundleManager.loadBundle("GameOver");
+    }
+
+    /**
+     * 控制点击
+     * @param node 需要控制点击事件的节点 
+     */
+    static controlClicks(node: cc.Node, state: boolean) {
+        const button = node.getComponent(cc.Button);
+        if (button) {
+            button.interactable = state;
+        }
+    }
 }

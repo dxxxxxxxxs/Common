@@ -10,6 +10,7 @@ import { AudioManager } from "./Audio/AudioManager";
 import { EventManager } from "./Event/EventManager";
 import HttpManager from "./Http/HttpManager";
 import ObjectPool from "./Pool/ObjectPool";
+import { mStorageManager } from "./Tools/mStorageManager";
 import { uiManager } from "./UI/UIManager";
 import { wxManager } from "./WX/wxManager";
 
@@ -26,6 +27,8 @@ export class Game {
     public static get ObjectPool() { return ObjectPool.Instance }
     /** http连接 */
     public static get Http() { return HttpManager.Instance }
+    /** 本地缓存 */
+    public static get Storage() { return mStorageManager.Instance }
 
     /** WXApi */
     public static get WX() { return wxManager.Instance }
