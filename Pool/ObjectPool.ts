@@ -35,7 +35,7 @@ export default class ObjectPool {
         return new Promise<cc.Node>(async (resovlve) => {
             let pool: SubPool = null;
             if (!this.pools.has(name)) {
-                await this.RegisterNew(name, parent, bundleName);
+                await this.RegisterNew(name, bundleName);
                 // pool = this.pools.get(name);
                 // resovlve(pool.Spawn());
             }
@@ -44,7 +44,7 @@ export default class ObjectPool {
             //     }, 0.01);
             // }
             pool = this.pools.get(name);
-            resovlve(pool.Spawn());
+            resovlve(pool.Spawn(parent));
         })
     }
     /**
@@ -80,9 +80,9 @@ export default class ObjectPool {
      * @param name 对象池名字
      * @param parent 对象池中所有对象的父节点
      */
-    async RegisterNew(name: string, parent: cc.Node, bundleName: string) {
+    async RegisterNew(name: string, bundleName: string) {
         let node = await BundleManager.load<cc.Prefab>("prefabs/" + name, bundleName);
-        let pool = new SubPool(node, parent);
+        let pool = new SubPool(node);
         this.pools.set(pool.poolName, pool);
     }
 }

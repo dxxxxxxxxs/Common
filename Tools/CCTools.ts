@@ -6,6 +6,7 @@
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
 import BundleManager from "../Bundle/BundleManager";
+import { Game } from "../Game";
 
 const { ccclass, property } = cc._decorator;
 
@@ -54,18 +55,21 @@ export default class CCTools extends cc.Component {
 
     /**添加点击事件(已防止重复注册，但是还是需要在destory的时候取消点击事件) */
     static fixedClick(node: cc.Node, callback: Function, target: any) {
+        let call = () => { Game.Audio.playSound("click", "Audio"); }
         node.off("click", callback, target);
+        node.off("click", call, target);
         let button: cc.Button;
         if (node.getComponent(cc.Button)) {
             button = node.getComponent(cc.Button);
         } else {
             button = node.addComponent(cc.Button);
         }
-
         button.transition = cc.Button.Transition.SCALE;
         button.duration = 0.1;
         button.zoomScale = 1.1;
         node.on("click", callback, target);
+        node.on("click", call, target);
+        this.controlClicks(node, true);
     }
 
     /**

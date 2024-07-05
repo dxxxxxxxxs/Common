@@ -12,25 +12,23 @@ export default class SubPool {
     public get poolName() { return this.myPrefab.name; }
     private nodeArray: cc.Node[] = [];
     private myPrefab: cc.Prefab = null;
-    private myParent: cc.Node = null;
-    constructor(prefab: cc.Prefab, parent: cc.Node) {
+    constructor(prefab: cc.Prefab,) {
         this.myPrefab = prefab;
-        this.myParent = parent;
     }
     init() {
         //this.myPrefab = await BundleManager.load<cc.Prefab>(this.poolName,"ObjectPool");
     }
-    public Spawn(): cc.Node {
+    public Spawn(parent: cc.Node): cc.Node {
         let go: cc.Node = null;
         this.nodeArray.forEach(node => {
             if (!node.active) {
                 go = node;
-                go.setParent(this.myParent);
+                go.setParent(parent);
             }
         })
         if (go == null) {
             go = cc.instantiate(this.myPrefab);
-            go.setParent(this.myParent);
+            go.setParent(parent);
             this.nodeArray.push(go);
         }
         go.active = true;

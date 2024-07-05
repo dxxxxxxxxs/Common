@@ -40,6 +40,7 @@ export class mStorageManager {
         let value = cc.sys.localStorage.getItem(key);
         // 数据获取失败，就走默认设置
         if (value === null) {
+            console.log(`获取本地存储数据失败，读取默认配置, key:${key}`);
             return defaultValue;
         }
 
@@ -49,5 +50,58 @@ export class mStorageManager {
             return JSON.parse(value);
         }
         return value;
+    }
+
+    //存储数据 wx平台
+    public setWXItem(key: string, value: any) {
+        if (cc.sys.platform === cc.sys.WECHAT_GAME) {
+            wx.setStorage({
+                key: key,
+                data: value
+            })
+        } else {
+            this.setItem(key, value);
+        }
+
+    }
+
+    // 读取数据 wx平台
+    public async getWXItem(key: string, defaultValue: any = ""): Promise<any> {
+        return new Promise<any>(async (resovlve) => {
+            if (cc.sys.platform === cc.sys.WECHAT_GAME) {
+                wx.getStorage({
+                    key: key,
+                    success(res) {
+                        console.log("获取成功" + res.data);
+                        resovlve(res.data);
+                    },
+                    fail(e) {
+                        wx.setStorage({
+                            key: key,
+                            data: defaultValue,
+                            success() {
+                                wx.getStorage({
+                                    key: key,
+                                    success(restwo) {
+                                        if (restwo == null || restwo == undefined) {
+                                            console.log(`获取本地存储数据失败，读取默认配置, key:${key}`);
+                                            resovlve(defaultValue);
+                                        }
+                                        console.log("获取默认配置成功" + restwo.data);
+                                        resovlve(restwo.data);
+                                    }
+                                })
+                            }
+                        })
+                    }
+                })
+
+            } else {
+                resovlve(this.getItem(key, defaultValue));
+            }
+
+        })
+
+
     }
 }

@@ -5,6 +5,7 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
+import AudioRoot from "../Audio/AudioRoot";
 import BundleManager from "../Bundle/BundleManager";
 import { Game } from "../Game";
 import CCTools from "../Tools/CCTools";
@@ -86,6 +87,9 @@ export class UIManager {
      * @param conf 配置对象
      */
     public initUIConf(conf: { [key: number]: UIConf }): void {
+
+        this.addAudioRoot();
+
         this.UIConf = conf;
 
         let winSize = cc.view.getFrameSize();
@@ -658,14 +662,15 @@ export class UIManager {
         // });
     }
 
-    // public addAudioRoot() {
-    //     //音效节点
-    //     let audioNode = new Node("audioNode");
-    //     audioNode.addComponent(AudioSource)
-    //     audioNode.addComponent(audioRoot)
-    //     this.uiRootCanvasNode.addChild(audioNode)
+    public addAudioRoot() {
+        //音效节点
+        this.uiRootCanvasNode = cc.director.getScene().getChildByName('Canvas');
+        let audioNode = new cc.Node("audioNode");
+        audioNode.addComponent(cc.AudioSource);
+        audioNode.addComponent(AudioRoot);
+        this.uiRootCanvasNode.addChild(audioNode);
 
-    // }
+    }
 }
 
 export let uiManager: UIManager = new UIManager();
