@@ -1,4 +1,4 @@
-import 'minigame-api-typings';
+/// <reference types="minigame-api-typings" />
 export class wxManager {
     private static _instance: wxManager;
     public static get Instance() {
@@ -26,5 +26,25 @@ export class wxManager {
     /**获取窗口数据 */
     getWindowInfo() {
         return wx.getWindowInfo();
+    }
+
+    showShareMenu() {
+        wx.showShareMenu({
+            menus: ['shareAppMessage', 'shareTimeline']
+        });
+    }
+
+    onShareAppMessage(title: string, imageUrl: string) {
+        wx.onShareAppMessage(() => ({
+            title: title,
+            imageUrl: imageUrl
+        }));
+    }
+
+    onShareTimeline(title: string, imageUrl: string) {
+        wx.onShareTimeline(() => ({
+            title: title,
+            imageUrl: imageUrl
+        }));
     }
 }
