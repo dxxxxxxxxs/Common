@@ -1,4 +1,5 @@
 /// <reference types="minigame-api-typings" />
+import { wxAdManager } from "./wxAdManager";
 export class wxManager {
     private static _instance: wxManager;
     public static get Instance() {
@@ -9,8 +10,13 @@ export class wxManager {
     }
     private constructor() { }
 
+    private get hasWx() {
+        return typeof wx !== "undefined";
+    }
+
     /**游戏切回前台 */
     onShow() {
+        if (!this.hasWx) return;
         wx.onShow(res => {
             console.log(res);
         })
@@ -18,6 +24,7 @@ export class wxManager {
 
     /**游戏切到后台 */
     onHide() {
+        if (!this.hasWx) return;
         wx.onHide(res => {
             console.log(res);
         })
@@ -25,16 +32,19 @@ export class wxManager {
 
     /**获取窗口数据 */
     getWindowInfo() {
+        if (!this.hasWx) return null;
         return wx.getWindowInfo();
     }
 
     showShareMenu() {
+        if (!this.hasWx) return;
         wx.showShareMenu({
             menus: ['shareAppMessage', 'shareTimeline']
         });
     }
 
     onShareAppMessage(title: string, imageUrl: string) {
+        if (!this.hasWx) return;
         wx.onShareAppMessage(() => ({
             title: title,
             imageUrl: imageUrl
@@ -42,9 +52,15 @@ export class wxManager {
     }
 
     onShareTimeline(title: string, imageUrl: string) {
+        if (!this.hasWx) return;
         wx.onShareTimeline(() => ({
             title: title,
             imageUrl: imageUrl
         }));
+    }
+
+    /** WX广告 */
+    public get Ad() {
+        return wxAdManager.Instance;
     }
 }

@@ -119,6 +119,9 @@ export default class CCTools extends cc.Component {
      * @param newParent 新父节点 
      */
     static changeParentAndKeepPosition(node: cc.Node, newParent: cc.Node) {
+        if (!node || !newParent || !node.parent) {
+            return;
+        }
         // 获取节点在世界坐标系中的位置
         let worldPos = node.parent.convertToWorldSpaceAR(node.position);
 
