@@ -8,20 +8,20 @@
 import GameModel from "../../Scripts/Model/GameModel";
 import BundleManager from "../Bundle/BundleManager";
 import { Game } from "../Game";
+import Singleton from "../Singleton";
 
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export class AudioManager {
-    private static _instance: AudioManager;
-    public static get Instance() {
-        if (this._instance == null) {
-            this._instance = new AudioManager();
-        }
-        return this._instance as AudioManager;
-    }
-    private constructor() { }
+export class AudioManager extends Singleton {
+    // private static _instance: AudioManager;
+    // public static get Instance() {
+    //     if (this._instance == null) {
+    //         this._instance = new AudioManager();
+    //     }
+    //     return this._instance as AudioManager;
+    // }
     private static audioSource?: cc.AudioSource
     private soundVolume: number = 1;
     private musicVolume: number = 1;

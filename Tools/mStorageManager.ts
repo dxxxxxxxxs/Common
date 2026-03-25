@@ -1,14 +1,16 @@
+import Singleton from "../Singleton";
+
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export class mStorageManager {
-    private static _instance: mStorageManager;
-    public static get Instance() {
-        if (this._instance == null) {
-            this._instance = new mStorageManager();
-        }
-        return this._instance as mStorageManager;
-    }
+export class mStorageManager extends Singleton {
+    // private static _instance: mStorageManager;
+    // public static get Instance() {
+    //     if (this._instance == null) {
+    //         this._instance = new mStorageManager();
+    //     }
+    //     return this._instance as mStorageManager;
+    // }
 
     // 保存数据
     public setItem(key: string, value: any) {

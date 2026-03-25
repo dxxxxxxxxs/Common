@@ -10,8 +10,8 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export default abstract class IResultAble extends cc.Component {
     protected onLoad(): void {
-        this.node.on("OnSpawn", this.onSpawn).bind(this);
-        this.node.on("UnSpawn", this.unSpawn).bind(this);
+        this.node.on("OnSpawn", this.onSpawn, this);
+        this.node.on("UnSpawn", this.unSpawn, this);
     }
     /**
      * 取出节点时执行,未完善，不要用
@@ -23,7 +23,7 @@ export default abstract class IResultAble extends cc.Component {
     public abstract unSpawn();
 
     protected onDestroy(): void {
-        this.node.off("OnSpawn", this.onSpawn);
-        this.node.off("UnSpawn", this.unSpawn);
+        this.node.off("OnSpawn", this.onSpawn, this);
+        this.node.off("UnSpawn", this.unSpawn, this);
     }
 }

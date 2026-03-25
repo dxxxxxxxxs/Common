@@ -1,14 +1,15 @@
 /// <reference types="minigame-api-typings" />
+import Singleton from "../Singleton";
 import { wxAdManager } from "./wxAdManager";
-export class wxManager {
-    private static _instance: wxManager;
-    public static get Instance() {
-        if (this._instance == null) {
-            this._instance = new wxManager();
-        }
-        return this._instance as wxManager;
-    }
-    private constructor() { }
+export class wxManager extends Singleton {
+    // private static _instance: wxManager;
+    // public static get Instance() {
+    //     if (this._instance == null) {
+    //         this._instance = new wxManager();
+    //     }
+    //     return this._instance as wxManager;
+    // }
+    // private constructor() { }
 
     private get hasWx() {
         return typeof wx !== "undefined";

@@ -14,16 +14,16 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export abstract class Controller {
     /**执行事件 */
-    public abstract Execute(data: Object);
+    public abstract Execute(data: any): void;
 
     /**获取model */
-    protected GetModel<T extends Model>(controller: new () => T) {
-        return MVC.GetModel<T>(controller) as T;
+    protected GetModel<T extends Model>(constructor: new () => T): T {
+        return MVC.GetModel<T>(constructor) as T;
     }
 
     /**获取View */
-    protected GetView<T extends View>(controller: new () => T) {
-        return MVC.GetView<T>(controller) as T;
+    protected GetView<T extends View>(constructor: new () => T): T {
+        return MVC.GetView<T>(constructor) as T;
     }
 
 

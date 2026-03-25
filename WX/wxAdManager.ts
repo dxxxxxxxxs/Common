@@ -1,5 +1,7 @@
 /// <reference types="minigame-api-typings" />
 
+import Singleton from "../Singleton";
+
 export interface IWxAdConfig {
     /**激励视频广告位id列表 */
     rewardedVideoIds?: string[];
@@ -15,14 +17,15 @@ export interface IRewardedVideoResult {
     reason?: string;
 }
 
-export class wxAdManager {
-    private static _instance: wxAdManager;
-    public static get Instance() {
-        if (this._instance == null) {
-            this._instance = new wxAdManager();
-        }
-        return this._instance as wxAdManager;
-    }
+export class wxAdManager extends Singleton {
+    // private static _instance: wxAdManager;
+    // public static get Instance() {
+    //     if (this._instance == null) {
+    //         this._instance = new wxAdManager();
+    //     }
+    //     return this._instance as wxAdManager;
+    // }
+    //private constructor() { }
 
     private _config: IWxAdConfig = {};
     private _rewardedVideoAdMap: Map<string, WechatMinigame.RewardedVideoAd> = new Map<string, WechatMinigame.RewardedVideoAd>();
@@ -30,7 +33,6 @@ export class wxAdManager {
     private _bannerAdMap: Map<string, WechatMinigame.BannerAd> = new Map<string, WechatMinigame.BannerAd>();
     private _activeBannerId: string = "";
 
-    private constructor() { }
 
     init(config: IWxAdConfig) {
         this._config = config || {};

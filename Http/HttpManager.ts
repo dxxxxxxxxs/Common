@@ -5,18 +5,20 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
+import Singleton from "../Singleton";
+
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export default class HttpManager {
+export default class HttpManager extends Singleton {
 
-    private static _instance: HttpManager;
-    public static get Instance() {
-        if (this._instance == null) {
-            this._instance = new HttpManager();
-        }
-        return this._instance as HttpManager;
-    }
+    // private static _instance: HttpManager;
+    // public static get Instance() {
+    //     if (this._instance == null) {
+    //         this._instance = new HttpManager();
+    //     }
+    //     return this._instance as HttpManager;
+    // }
 
     doGet(url: string, data?: any, complete?: Function, error?: Function, header?: { name: string, value: string }) {
         let request: XMLHttpRequest = this.getRequest("GET", url, complete, error, header);

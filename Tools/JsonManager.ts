@@ -6,19 +6,20 @@
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
 import BundleManager from "../Bundle/BundleManager";
+import Singleton from "../Singleton";
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export default class JsonManager {
+export default class JsonManager extends Singleton {
 
-    private static _instance: JsonManager;
-    public static get Instance() {
-        if (this._instance == null) {
-            this._instance = new JsonManager();
-        }
-        return this._instance as JsonManager;
-    }
+    // private static _instance: JsonManager;
+    // public static get Instance() {
+    //     if (this._instance == null) {
+    //         this._instance = new JsonManager();
+    //     }
+    //     return this._instance as JsonManager;
+    // }
 
     async jsonConvert(jsonName: string): Promise<cc.JsonAsset> {
         return new Promise<cc.JsonAsset>(async (resovlve) => {

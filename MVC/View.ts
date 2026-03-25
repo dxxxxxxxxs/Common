@@ -16,13 +16,13 @@ export abstract class View {
 
     public AttentionList: Set<string> = new Set<string>;
 
-    public abstract RegisterAttentionEvent();
+    public abstract RegisterAttentionEvent(): void;
 
     /**处理事件 */
-    public abstract HandleEvent(name: string, data: Object);
+    public abstract HandleEvent(name: string, data: any): void;
 
     /**发送事件 */
-    protected SendEvent(eventName: string, data: Object = null) {
+    protected SendEvent(eventName: string, data: any = null) {
         MVC.SendEvent(eventName, data);
     }
 

@@ -56,10 +56,11 @@ export default class ObjectPool {
         this.pools.forEach((value, key) => {
             if (value.Contains(node)) {
                 pool = value;
-                return;
             }
-        })
-        pool.UnSpawn(node);
+        });
+        if (pool) {
+            pool.UnSpawn(node);
+        }
     }
     /**
      * 回收所有节点

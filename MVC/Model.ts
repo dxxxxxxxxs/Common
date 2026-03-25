@@ -15,7 +15,7 @@ export abstract class Model {
     public abstract Name: string;
 
     /**发送事件 */
-    protected SendEvent(eventName: string, data: Object = null) {
+    protected SendEvent(eventName: string, data: any = null) {
         MVC.SendEvent(eventName, data);
     }
 }
