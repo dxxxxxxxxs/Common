@@ -122,12 +122,37 @@ export class UIManager {
      * 添加防触摸层
      * @param zOrder 屏蔽层的层级
      */
-    private preventTouch(zOrder: number) {
-        let child = cc.director.getScene().getChildByName('Canvas') as unknown as cc.Node;
-        let node = CCTools.addNode(child, 'preventTouch')
-        node.on(cc.Node.EventType.TOUCH_START, function (event: Event) {
-        }, node);
-        child.addChild(node);
+    /** 与 onUIOpen 中 showType → 层级命名一致 */
+    private getLayerNameByShowType(showType: UIShowTypes): string {
+        switch (showType) {
+            case UIShowTypes.UIFullScreen:
+                return 'bottom';
+            case UIShowTypes.UIAddition:
+                return 'middle';
+            case UIShowTypes.UISingle:
+            default:
+                return 'top';
+        }
+    }
+
+    private preventTouch(zOrder: number, showType: UIShowTypes) {
+        const canvas = cc.director.getScene().getChildByName('Canvas') as unknown as cc.Node;
+        const nodeName = this.getLayerNameByShowType(showType);
+        // 遮罩挂在与当前界面相同的层（top/middle/bottom）内，且先于本界面节点加入；
+        // 顺序：同层已有节点 → 遮罩 → 当前界面，弹窗可点、同层下层被挡。
+        let layer = canvas.getChildByName(nodeName);
+        if (!layer) {
+            layer = canvas;
+        }
+        let node = CCTools.addNode(layer, 'preventTouch');
+        if (!node.getComponent(cc.BlockInputEvents)) {
+            node.addComponent(cc.BlockInputEvents);
+        }
+        const swallow = () => { };
+        node.on(cc.Node.EventType.TOUCH_START, swallow, node);
+        node.on(cc.Node.EventType.TOUCH_MOVE, swallow, node);
+        node.on(cc.Node.EventType.TOUCH_END, swallow, node);
+        node.on(cc.Node.EventType.TOUCH_CANCEL, swallow, node);
         return node;
     }
 
@@ -286,6 +311,11 @@ export class UIManager {
         uiView.node.active = true;
         //uiView.node.zIndex = uiInfo.zOrder || this.UIStack.length;
 
+        // 须在 addChild(uiView) 之前创建，且按本界面 showType 选 bottom/middle/top
+        if (this.UIConf[uiId]?.preventTouch && !uiInfo.preventNode) {
+            uiInfo.preventNode = this.preventTouch(uiInfo.zOrder, uiView.showType);
+        }
+
         // 快速关闭界面的设置，绑定界面中的background，实现快速关闭
         if (uiView.quickClose) {
             let backGround = uiView.node.getChildByName('background');
@@ -385,11 +415,6 @@ export class UIManager {
         uiInfo.zOrder = (uiArgs && uiArgs.zOrder) || this.UIStack.length + 1;
         console.log(uiInfo.zOrder)
         this.UIStack.push(uiInfo);
-
-        // 先屏蔽点击
-        if (this.UIConf[uiId]?.preventTouch) {
-            uiInfo.preventNode = this.preventTouch(uiInfo.zOrder);
-        }
 
         this.isOpening = true;
         this.openingUIId = uiId;
