@@ -1,9 +1,12 @@
 /// <reference types="minigame-api-typings" />
 
 export interface IWxAdConfig {
-    rewardedVideoId?: string;
-    interstitialId?: string;
-    bannerId?: string;
+    /**激励视频广告位id列表 */
+    rewardedVideoIds?: string[];
+    /**插屏广告位id列表 */
+    interstitialIds?: string[];
+    /**Banner广告位id列表 */
+    bannerIds?: string[];
 }
 
 export interface IRewardedVideoResult {
@@ -22,9 +25,10 @@ export class wxAdManager {
     }
 
     private _config: IWxAdConfig = {};
-    private _rewardedVideoAd: WechatMinigame.RewardedVideoAd = null;
-    private _interstitialAd: WechatMinigame.InterstitialAd = null;
-    private _bannerAd: WechatMinigame.BannerAd = null;
+    private _rewardedVideoAdMap: Map<string, WechatMinigame.RewardedVideoAd> = new Map<string, WechatMinigame.RewardedVideoAd>();
+    private _interstitialAdMap: Map<string, WechatMinigame.InterstitialAd> = new Map<string, WechatMinigame.InterstitialAd>();
+    private _bannerAdMap: Map<string, WechatMinigame.BannerAd> = new Map<string, WechatMinigame.BannerAd>();
+    private _activeBannerId: string = "";
 
     private constructor() { }
 
@@ -36,12 +40,25 @@ export class wxAdManager {
         return typeof wx !== "undefined";
     }
 
+    private getRandomAdUnitId(ids: string[]): string {
+        if (!ids || ids.length <= 0) {
+            return "";
+        }
+        const validIds = ids.filter(id => !!id && id.trim().length > 0);
+        if (validIds.length <= 0) {
+            return "";
+        }
+        const idx = Math.floor(Math.random() * validIds.length);
+        return validIds[idx];
+    }
+
     async showRewardedVideo(): Promise<IRewardedVideoResult> {
         if (!this.isSupported()) {
             // 未运行在微信环境时，放行道具流程，方便开发阶段验证逻辑
             return { shown: false, completed: true, reason: "wx_unavailable_passthrough" };
         }
-        if (!this._config.rewardedVideoId) {
+        const adUnitId = this.getRandomAdUnitId(this._config.rewardedVideoIds || []);
+        if (!adUnitId) {
             // 未配置广告位时，放行道具流程，后续接入 adUnitId 即自动切换为真实广告
             return { shown: false, completed: true, reason: "rewarded_adunit_missing_passthrough" };
         }
@@ -49,8 +66,10 @@ export class wxAdManager {
             return { shown: false, completed: false, reason: "rewarded_api_unavailable" };
         }
 
-        if (this._rewardedVideoAd == null) {
-            this._rewardedVideoAd = wx.createRewardedVideoAd({ adUnitId: this._config.rewardedVideoId });
+        let rewardedVideoAd = this._rewardedVideoAdMap.get(adUnitId);
+        if (rewardedVideoAd == null) {
+            rewardedVideoAd = wx.createRewardedVideoAd({ adUnitId: adUnitId });
+            this._rewardedVideoAdMap.set(adUnitId, rewardedVideoAd);
         }
 
         return new Promise<IRewardedVideoResult>((resolve) => {
@@ -68,16 +87,16 @@ export class wxAdManager {
                 });
             };
             const cleanup = () => {
-                this._rewardedVideoAd.offClose(onClose);
-                this._rewardedVideoAd.offError(onError);
+                rewardedVideoAd.offClose(onClose);
+                rewardedVideoAd.offError(onError);
             };
 
-            this._rewardedVideoAd.onClose(onClose);
-            this._rewardedVideoAd.onError(onError);
+            rewardedVideoAd.onClose(onClose);
+            rewardedVideoAd.onError(onError);
 
-            this._rewardedVideoAd.show().catch(() => {
-                this._rewardedVideoAd.load().then(() => {
-                    return this._rewardedVideoAd.show();
+            rewardedVideoAd.show().catch(() => {
+                rewardedVideoAd.load().then(() => {
+                    return rewardedVideoAd.show();
                 }).catch((err: { errCode?: number }) => {
                     cleanup();
                     resolve({
@@ -91,21 +110,27 @@ export class wxAdManager {
     }
 
     async showInterstitial(): Promise<boolean> {
-        if (!this.isSupported() || !this._config.interstitialId || !wx.createInterstitialAd) {
+        if (!this.isSupported() || !wx.createInterstitialAd) {
+            return false;
+        }
+        const adUnitId = this.getRandomAdUnitId(this._config.interstitialIds || []);
+        if (!adUnitId) {
             return false;
         }
 
-        if (this._interstitialAd == null) {
-            this._interstitialAd = wx.createInterstitialAd({ adUnitId: this._config.interstitialId });
+        let interstitialAd = this._interstitialAdMap.get(adUnitId);
+        if (interstitialAd == null) {
+            interstitialAd = wx.createInterstitialAd({ adUnitId: adUnitId });
+            this._interstitialAdMap.set(adUnitId, interstitialAd);
         }
 
         try {
-            await this._interstitialAd.show();
+            await interstitialAd.show();
             return true;
         } catch (error) {
             try {
-                await this._interstitialAd.load();
-                await this._interstitialAd.show();
+                await interstitialAd.load();
+                await interstitialAd.show();
                 return true;
             } catch (_error) {
                 return false;
@@ -114,38 +139,40 @@ export class wxAdManager {
     }
 
     showBanner(style?: Partial<WechatMinigame.BannerAdStyle>) {
-        if (!this.isSupported() || !this._config.bannerId || !wx.createBannerAd) {
+        if (!this.isSupported() || !wx.createBannerAd) {
+            return;
+        }
+        const adUnitId = this.getRandomAdUnitId(this._config.bannerIds || []);
+        if (!adUnitId) {
             return;
         }
 
-        if (this._bannerAd == null) {
-            this._bannerAd = wx.createBannerAd({
-                adUnitId: this._config.bannerId,
+        let bannerAd = this._bannerAdMap.get(adUnitId);
+        if (bannerAd == null) {
+            bannerAd = wx.createBannerAd({
+                adUnitId: adUnitId,
                 style: Object.assign({ left: 0, top: 0, width: 320, height: 104 }, style || {})
             });
+            this._bannerAdMap.set(adUnitId, bannerAd);
         }
+        this._activeBannerId = adUnitId;
 
-        this._bannerAd.show().catch(() => { });
+        bannerAd.show().catch(() => { });
     }
 
     hideBanner() {
-        if (this._bannerAd) {
-            this._bannerAd.hide();
+        if (this._activeBannerId && this._bannerAdMap.has(this._activeBannerId)) {
+            this._bannerAdMap.get(this._activeBannerId).hide();
         }
     }
 
     destroyAll() {
-        if (this._rewardedVideoAd) {
-            this._rewardedVideoAd.destroy();
-            this._rewardedVideoAd = null;
-        }
-        if (this._interstitialAd) {
-            this._interstitialAd.destroy();
-            this._interstitialAd = null;
-        }
-        if (this._bannerAd) {
-            this._bannerAd.destroy();
-            this._bannerAd = null;
-        }
+        this._rewardedVideoAdMap.forEach(ad => ad.destroy());
+        this._rewardedVideoAdMap.clear();
+        this._interstitialAdMap.forEach(ad => ad.destroy());
+        this._interstitialAdMap.clear();
+        this._bannerAdMap.forEach(ad => ad.destroy());
+        this._bannerAdMap.clear();
+        this._activeBannerId = "";
     }
 }
