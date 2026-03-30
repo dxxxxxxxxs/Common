@@ -4,6 +4,9 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export class mStorageManager extends Singleton {
+    public static get Instance(): mStorageManager {
+        return this.getSingletonInstance() as mStorageManager;
+    }
     // private static _instance: mStorageManager;
     // public static get Instance() {
     //     if (this._instance == null) {

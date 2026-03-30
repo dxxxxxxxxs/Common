@@ -12,6 +12,9 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class JsonManager extends Singleton {
+    public static get Instance(): JsonManager {
+        return this.getSingletonInstance() as JsonManager;
+    }
 
     // private static _instance: JsonManager;
     // public static get Instance() {

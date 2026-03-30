@@ -51,12 +51,12 @@ export default class BundleManager {
      * @param bundleName 分包名称
      * @returns 
      */
-    public static async load<T extends cc.Asset>(bundlePath: string, bundleName: string): Promise<T> {
+    public static async load<T extends cc.Asset>(bundlePath: string, bundleName: string, assetType?: typeof cc.Asset): Promise<T> {
         return new Promise<T>(async (resovlve) => {
             let bundle = await this.loadBundle(bundleName);
             //let bundle =this.bundleMap.get(bundleName);
             if (bundle) {
-                bundle.load(bundlePath, (err, result: T) => {
+                const onLoad = (err: Error, result: T) => {
                     if (err) {
                         console.error(err);
                         resovlve(null);
@@ -65,7 +65,12 @@ export default class BundleManager {
                         console.log("加载资源成功");
                         resovlve(result);
                     }
-                })
+                };
+                if (assetType) {
+                    bundle.load(bundlePath, assetType, onLoad);
+                } else {
+                    bundle.load(bundlePath, onLoad);
+                }
             }
             else {
                 console.log("没有这个bundle分包" + bundleName);

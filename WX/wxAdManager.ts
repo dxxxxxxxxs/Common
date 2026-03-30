@@ -1,23 +1,12 @@
 /// <reference types="minigame-api-typings" />
 
+import { IPlatformAd, IPlatformAdConfig, IRewardedVideoResult } from "../Platform/Platform";
 import Singleton from "../Singleton";
 
-export interface IWxAdConfig {
-    /**激励视频广告位id列表 */
-    rewardedVideoIds?: string[];
-    /**插屏广告位id列表 */
-    interstitialIds?: string[];
-    /**Banner广告位id列表 */
-    bannerIds?: string[];
-}
-
-export interface IRewardedVideoResult {
-    shown: boolean;
-    completed: boolean;
-    reason?: string;
-}
-
-export class wxAdManager extends Singleton {
+export class wxAdManager extends Singleton implements IPlatformAd {
+    public static get Instance(): wxAdManager {
+        return this.getSingletonInstance() as wxAdManager;
+    }
     // private static _instance: wxAdManager;
     // public static get Instance() {
     //     if (this._instance == null) {
@@ -27,14 +16,14 @@ export class wxAdManager extends Singleton {
     // }
     //private constructor() { }
 
-    private _config: IWxAdConfig = {};
+    private _config: IPlatformAdConfig = {};
     private _rewardedVideoAdMap: Map<string, WechatMinigame.RewardedVideoAd> = new Map<string, WechatMinigame.RewardedVideoAd>();
     private _interstitialAdMap: Map<string, WechatMinigame.InterstitialAd> = new Map<string, WechatMinigame.InterstitialAd>();
     private _bannerAdMap: Map<string, WechatMinigame.BannerAd> = new Map<string, WechatMinigame.BannerAd>();
     private _activeBannerId: string = "";
 
 
-    init(config: IWxAdConfig) {
+    init(config: IPlatformAdConfig) {
         this._config = config || {};
     }
 

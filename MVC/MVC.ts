@@ -15,6 +15,9 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export class MVC extends Singleton {
+    public static get Instance(): MVC {
+        return this.getSingletonInstance() as MVC;
+    }
 
     public static Models: Map<string, Model> = new Map<string, Model>();
     public static Views: Map<string, View> = new Map<string, View>();

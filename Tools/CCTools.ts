@@ -96,9 +96,18 @@ export default class CCTools extends cc.Component {
      * @param bundleName 
      */
     public static async fix(node: cc.Node, path: string, bundleName: string) {
-        const asset: cc.SpriteFrame = await BundleManager.load<cc.SpriteFrame>(path, bundleName);
-        node.getComponent(cc.Sprite).spriteFrame = asset as cc.SpriteFrame;
-        console.log("替换资源成功 " + (asset as cc.SpriteFrame).name);
+        const asset: cc.SpriteFrame = await BundleManager.load<cc.SpriteFrame>(path, bundleName, cc.SpriteFrame);
+        const sprite = node.getComponent(cc.Sprite);
+        if (!sprite) {
+            return;
+        }
+        if (asset && typeof (asset as any).textureLoaded === "function") {
+            sprite.spriteFrame = asset as cc.SpriteFrame;
+            console.log("替换资源成功 " + (asset as cc.SpriteFrame).name);
+        } else {
+            sprite.spriteFrame = null;
+            cc.warn("替换资源失败，资源不是 SpriteFrame: " + bundleName + "/" + path);
+        }
     }
 
     /**

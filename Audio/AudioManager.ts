@@ -15,6 +15,9 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export class AudioManager extends Singleton {
+    public static get Instance(): AudioManager {
+        return this.getSingletonInstance() as AudioManager;
+    }
     // private static _instance: AudioManager;
     // public static get Instance() {
     //     if (this._instance == null) {

@@ -11,6 +11,9 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class HttpManager extends Singleton {
+    public static get Instance(): HttpManager {
+        return this.getSingletonInstance() as HttpManager;
+    }
 
     // private static _instance: HttpManager;
     // public static get Instance() {

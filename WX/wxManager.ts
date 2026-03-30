@@ -1,7 +1,12 @@
 /// <reference types="minigame-api-typings" />
+import I18nManager from "../I18n/I18nManager";
+import { IPlatform } from "../Platform/Platform";
 import Singleton from "../Singleton";
 import { wxAdManager } from "./wxAdManager";
-export class wxManager extends Singleton {
+export class wxManager extends Singleton implements IPlatform {
+    public static get Instance(): wxManager {
+        return this.getSingletonInstance() as wxManager;
+    }
     // private static _instance: wxManager;
     // public static get Instance() {
     //     if (this._instance == null) {
@@ -13,6 +18,22 @@ export class wxManager extends Singleton {
 
     private get hasWx() {
         return typeof wx !== "undefined";
+    }
+
+    public get isWxPlatform() {
+        return this.hasWx;
+    }
+
+    public get name() {
+        return "wx";
+    }
+
+    public get supportsRank() {
+        return this.hasWx;
+    }
+
+    public get supportsShare() {
+        return this.hasWx;
     }
 
     /**游戏切回前台 */
@@ -60,6 +81,12 @@ export class wxManager extends Singleton {
         }));
     }
 
+    initShare(title: string, imageUrl: string, timelineTitle?: string) {
+        this.showShareMenu();
+        this.onShareAppMessage(title, imageUrl);
+        this.onShareTimeline(timelineTitle || title, imageUrl);
+    }
+
     /** WX广告 */
     public get Ad() {
         return wxAdManager.Instance;
@@ -84,7 +111,11 @@ export class wxManager extends Singleton {
     showRank() {
         if (!this.hasWx) return;
         const ctx = wx.getOpenDataContext();
-        ctx.postMessage({ type: "showRank" });
+        ctx.postMessage({
+            type: "showRank",
+            emptyRankText: I18nManager.Instance.t("common.emptyRank", "暂无排行数据"),
+            defaultNickname: I18nManager.Instance.t("common.wxUser", "微信用户"),
+        });
     }
 
     /**通知开放数据域隐藏排行榜 */

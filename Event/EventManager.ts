@@ -23,6 +23,9 @@ interface CallBackTarget {
 }
 @ccclass
 export class EventManager extends Singleton {
+    public static get Instance(): EventManager {
+        return this.getSingletonInstance() as EventManager;
+    }
     // private static _instance:EventManager;
     // public static get Instance()
     // {

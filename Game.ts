@@ -9,11 +9,12 @@ import { UICF } from "../Scripts/GameConfig";
 import { AudioManager } from "./Audio/AudioManager";
 import { EventManager } from "./Event/EventManager";
 import HttpManager from "./Http/HttpManager";
+import I18nManager from "./I18n/I18nManager";
+import { PlatformManager } from "./Platform/Platform";
 import ObjectPool from "./Pool/ObjectPool";
 import JsonManager from "./Tools/JsonManager";
 import { mStorageManager } from "./Tools/mStorageManager";
 import { uiManager } from "./UI/UIManager";
-import { wxManager } from "./WX/wxManager";
 
 
 const { ccclass, property } = cc._decorator;
@@ -32,9 +33,14 @@ export class Game {
     public static get Storage() { return mStorageManager.Instance }
     /** 本地缓存 */
     public static get JsonManager() { return JsonManager.Instance }
+    /** 多语言管理 */
+    public static get I18n() { return I18nManager.Instance }
 
-    /** WXApi */
-    public static get WX() { return wxManager.Instance }
+    /** 平台能力 */
+    public static get Platform() { return PlatformManager.Instance.current }
+
+    /** 兼容旧代码，后续逐步移除 */
+    public static get WX() { return this.Platform }
 
     public static bundles: Map<string, cc.AssetManager.Bundle> = new Map<string, cc.AssetManager.Bundle>();
 
