@@ -39,6 +39,10 @@ export class WebPlatform implements IPlatform {
 
     initShare(_title: string, _imageUrl: string, _timelineTitle?: string) { }
 
+    async shareAppMessage(_title?: string, _imageUrl?: string, _query?: string): Promise<boolean> {
+        return true;
+    }
+
     postMaxLevel(_level: number) { }
 
     showRank() { }

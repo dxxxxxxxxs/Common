@@ -35,6 +35,7 @@ export interface IPlatform {
     onHide(): void;
     getWindowInfo(): any;
     initShare(title: string, imageUrl: string, timelineTitle?: string): void;
+    shareAppMessage(title?: string, imageUrl?: string, query?: string): Promise<boolean>;
     postMaxLevel(level: number): void;
     showRank(): void;
     hideRank(): void;

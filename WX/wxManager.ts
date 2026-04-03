@@ -16,6 +16,10 @@ export class wxManager extends Singleton implements IPlatform {
     // }
     // private constructor() { }
 
+    private _shareTitle: string = "";
+    private _shareImageUrl: string = "";
+    private _shareTimelineTitle: string = "";
+
     private get hasWx() {
         return typeof wx !== "undefined";
     }
@@ -82,9 +86,37 @@ export class wxManager extends Singleton implements IPlatform {
     }
 
     initShare(title: string, imageUrl: string, timelineTitle?: string) {
+        this._shareTitle = title;
+        this._shareImageUrl = imageUrl;
+        this._shareTimelineTitle = timelineTitle || title;
         this.showShareMenu();
         this.onShareAppMessage(title, imageUrl);
-        this.onShareTimeline(timelineTitle || title, imageUrl);
+        this.onShareTimeline(this._shareTimelineTitle, imageUrl);
+    }
+
+    async shareAppMessage(title?: string, imageUrl?: string, query?: string): Promise<boolean> {
+        if (!this.hasWx) {
+            return true;
+        }
+        if (!wx.shareAppMessage) {
+            return false;
+        }
+
+        return new Promise<boolean>((resolve) => {
+            try {
+                const shareOptions: any = {
+                    title: title || this._shareTitle,
+                    imageUrl: imageUrl || this._shareImageUrl,
+                    query: query || "",
+                    success: () => resolve(true),
+                    fail: () => resolve(false),
+                };
+                wx.shareAppMessage(shareOptions);
+            } catch (error) {
+                console.error("shareAppMessage failed", error);
+                resolve(false);
+            }
+        });
     }
 
     /** WX广告 */
