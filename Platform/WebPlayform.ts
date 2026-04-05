@@ -48,4 +48,6 @@ export class WebPlatform implements IPlatform {
     showRank() { }
 
     hideRank() { }
+    
+    openGameClub(path: string) { }
 }

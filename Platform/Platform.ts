@@ -39,6 +39,7 @@ export interface IPlatform {
     postMaxLevel(level: number): void;
     showRank(): void;
     hideRank(): void;
+    openGameClub(path: string): void;
 }
 
 export class PlatformManager extends Singleton {
