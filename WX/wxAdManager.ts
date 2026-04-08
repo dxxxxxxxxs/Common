@@ -18,6 +18,7 @@ export class wxAdManager extends Singleton implements IPlatformAd {
 
     private _config: IPlatformAdConfig = {};
     private _rewardedVideoAdMap: Map<string, WechatMinigame.RewardedVideoAd> = new Map<string, WechatMinigame.RewardedVideoAd>();
+    private _rewardedVideoAvailableMap: Map<string, boolean> = new Map<string, boolean>();
     private _interstitialAdMap: Map<string, WechatMinigame.InterstitialAd> = new Map<string, WechatMinigame.InterstitialAd>();
     private _bannerAdMap: Map<string, WechatMinigame.BannerAd> = new Map<string, WechatMinigame.BannerAd>();
     private _activeBannerId: string = "";
@@ -25,6 +26,10 @@ export class wxAdManager extends Singleton implements IPlatformAd {
 
     init(config: IPlatformAdConfig) {
         this._config = config || {};
+        const rewardedIds = this._config.rewardedVideoIds || [];
+        for (const adUnitId of rewardedIds) {
+            this.ensureRewardedVideoAd(adUnitId);
+        }
     }
 
     isSupported() {
@@ -43,6 +48,96 @@ export class wxAdManager extends Singleton implements IPlatformAd {
         return validIds[idx];
     }
 
+    private showToast(title: string) {
+        if (!this.isSupported() || !wx.showToast) {
+            return;
+        }
+        wx.showToast({
+            title,
+            icon: "none",
+            duration: 2000,
+        });
+    }
+
+    private getRewardedErrorMessage(errCode?: number): string {
+        switch (errCode) {
+            case 1002:
+                return "广告单元无效，请稍后再试";
+            case 1003:
+                return "内部错误，请稍后再试";
+            case 1004:
+                return "暂无合适广告，请稍后再试";
+            case 1005:
+                return "广告组件审核中";
+            case 1006:
+                return "广告组件被驳回";
+            case 1007:
+                return "广告组件已关闭";
+            case 1008:
+                return "暂无广告可用，请稍后再试";
+            default:
+                return "广告加载失败，请稍后再试";
+        }
+    }
+
+    private handleRewardedError(adUnitId: string, err?: { errCode?: number; errMsg?: string }, showUserTip: boolean = true) {
+        this._rewardedVideoAvailableMap.set(adUnitId, false);
+        console.warn("rewardedVideoAd error:", adUnitId, err);
+        if (showUserTip) {
+            this.showToast(this.getRewardedErrorMessage(err && err.errCode));
+        }
+    }
+
+    private ensureRewardedVideoAd(adUnitId: string): WechatMinigame.RewardedVideoAd {
+        let rewardedVideoAd = this._rewardedVideoAdMap.get(adUnitId);
+        if (rewardedVideoAd != null) {
+            return rewardedVideoAd;
+        }
+
+        rewardedVideoAd = wx.createRewardedVideoAd({ adUnitId: adUnitId });
+        rewardedVideoAd.onLoad(() => {
+            this._rewardedVideoAvailableMap.set(adUnitId, true);
+        });
+        rewardedVideoAd.onError((err) => {
+            this.handleRewardedError(adUnitId, err, false);
+        });
+
+        this._rewardedVideoAdMap.set(adUnitId, rewardedVideoAd);
+        this._rewardedVideoAvailableMap.set(adUnitId, true);
+        rewardedVideoAd.load().catch((err) => {
+            this.handleRewardedError(adUnitId, err, false);
+        });
+        return rewardedVideoAd;
+    }
+
+    isRewardedVideoAvailable(): boolean {
+        if (!this.isSupported() || !wx.createRewardedVideoAd) {
+            return false;
+        }
+
+        const rewardedIds = (this._config.rewardedVideoIds || []).filter(id => !!id && id.trim().length > 0);
+        if (rewardedIds.length <= 0) {
+            return false;
+        }
+
+        let hasAvailableAd = false;
+        for (const adUnitId of rewardedIds) {
+            const rewardedVideoAd = this.ensureRewardedVideoAd(adUnitId);
+            const isAvailable = this._rewardedVideoAvailableMap.get(adUnitId) !== false;
+            if (isAvailable) {
+                hasAvailableAd = true;
+                break;
+            }
+
+            rewardedVideoAd.load().then(() => {
+                this._rewardedVideoAvailableMap.set(adUnitId, true);
+            }).catch((err) => {
+                this.handleRewardedError(adUnitId, err, false);
+            });
+        }
+        return hasAvailableAd;
+    }
+
     async showRewardedVideo(): Promise<IRewardedVideoResult> {
         if (!this.isSupported()) {
             // 未运行在微信环境时，放行道具流程，方便开发阶段验证逻辑
@@ -57,10 +152,10 @@ export class wxAdManager extends Singleton implements IPlatformAd {
             return { shown: false, completed: false, reason: "rewarded_api_unavailable" };
         }
 
-        let rewardedVideoAd = this._rewardedVideoAdMap.get(adUnitId);
-        if (rewardedVideoAd == null) {
-            rewardedVideoAd = wx.createRewardedVideoAd({ adUnitId: adUnitId });
-            this._rewardedVideoAdMap.set(adUnitId, rewardedVideoAd);
+        const rewardedVideoAd = this.ensureRewardedVideoAd(adUnitId);
+        if (!this.isRewardedVideoAvailable() || this._rewardedVideoAvailableMap.get(adUnitId) === false) {
+            this.showToast("暂无合适广告，请稍后再试");
+            return { shown: false, completed: false, reason: "rewarded_no_fill" };
         }
 
         return new Promise<IRewardedVideoResult>((resolve) => {
@@ -71,6 +166,7 @@ export class wxAdManager extends Singleton implements IPlatformAd {
             };
             const onError = (err: { errCode?: number }) => {
                 cleanup();
+                this.handleRewardedError(adUnitId, err);
                 resolve({
                     shown: false,
                     completed: false,
@@ -87,9 +183,11 @@ export class wxAdManager extends Singleton implements IPlatformAd {
 
             rewardedVideoAd.show().catch(() => {
                 rewardedVideoAd.load().then(() => {
+                    this._rewardedVideoAvailableMap.set(adUnitId, true);
                     return rewardedVideoAd.show();
                 }).catch((err: { errCode?: number }) => {
                     cleanup();
+                    this.handleRewardedError(adUnitId, err);
                     resolve({
                         shown: false,
                         completed: false,
@@ -160,6 +258,7 @@ export class wxAdManager extends Singleton implements IPlatformAd {
     destroyAll() {
         this._rewardedVideoAdMap.forEach(ad => ad.destroy());
         this._rewardedVideoAdMap.clear();
+        this._rewardedVideoAvailableMap.clear();
         this._interstitialAdMap.forEach(ad => ad.destroy());
         this._interstitialAdMap.clear();
         this._bannerAdMap.forEach(ad => ad.destroy());

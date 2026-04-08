@@ -157,23 +157,23 @@ export class wxManager extends Singleton implements IPlatform {
         ctx.postMessage({ type: "hideRank" });
     }
 
-    openGameClub(path:string){
+    openGameClub(path: string) {
         if (!this.hasWx) return;
         const pageManager = (wx as any).createPageManager();
 
         pageManager.load({
-          openlink: path, // 由不同渠道获得的OPENLINK值
+            openlink: path, // 由不同渠道获得的OPENLINK值
         }).then((res) => {
-          // 加载成功，res 可能携带不同活动、功能返回的特殊回包信息（具体请参阅渠道说明）
-          console.log(res);
-        
-          // 加载成功后按需显示
-          pageManager.show();
-        
+            // 加载成功，res 可能携带不同活动、功能返回的特殊回包信息（具体请参阅渠道说明）
+            console.log(res);
+
+            // 加载成功后按需显示
+            pageManager.show();
+
         }).catch((err) => {
-          // 加载失败，请查阅 err 给出的错误信息
-          console.error(err);
+            // 加载失败，请查阅 err 给出的错误信息
+            console.error(err);
         })
-    
+
     }
 }

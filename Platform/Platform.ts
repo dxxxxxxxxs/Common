@@ -17,6 +17,7 @@ export interface IPlatformAdConfig {
 export interface IPlatformAd {
     init(config: IPlatformAdConfig): void;
     isSupported(): boolean;
+    isRewardedVideoAvailable(): boolean;
     showRewardedVideo(): Promise<IRewardedVideoResult>;
     showInterstitial(): Promise<boolean>;
     showBanner(style?: any): void;

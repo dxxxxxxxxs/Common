@@ -7,6 +7,10 @@ export class WebPlatformAd implements IPlatformAd {
         return false;
     }
 
+    isRewardedVideoAvailable() {
+        return true;
+    }
+
     async showRewardedVideo(): Promise<IRewardedVideoResult> {
         return { shown: false, completed: true, reason: "web_passthrough" };
     }
