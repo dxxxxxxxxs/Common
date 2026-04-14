@@ -1,24 +1,17 @@
 /// <reference types="minigame-api-typings" />
 import I18nManager from "../I18n/I18nManager";
-import { IPlatform } from "../Platform/Platform";
+import { IPlatform, ShareConfig, ShareConfigProvider } from "../Platform/Platform";
 import Singleton from "../Singleton";
 import { wxAdManager } from "./wxAdManager";
 export class wxManager extends Singleton implements IPlatform {
     public static get Instance(): wxManager {
         return this.getSingletonInstance() as wxManager;
     }
-    // private static _instance: wxManager;
-    // public static get Instance() {
-    //     if (this._instance == null) {
-    //         this._instance = new wxManager();
-    //     }
-    //     return this._instance as wxManager;
-    // }
-    // private constructor() { }
 
-    private _shareTitle: string = "";
     private _shareImageUrl: string = "";
     private _shareTimelineTitle: string = "";
+    private _shareConfigProvider: ShareConfigProvider = null;
+    private _onShowCallbacks: Array<(query: Record<string, string>) => void> = [];
 
     private get hasWx() {
         return typeof wx !== "undefined";
@@ -40,58 +33,66 @@ export class wxManager extends Singleton implements IPlatform {
         return this.hasWx;
     }
 
-    /**游戏切回前台 */
     onShow() {
         if (!this.hasWx) return;
-        wx.onShow(res => {
-            console.log(res);
-        })
+        wx.onShow((res: any) => {
+            const query = this.parseQuery(res?.query);
+            for (const cb of this._onShowCallbacks) {
+                try { cb(query); } catch (e) { console.error("onShow callback error", e); }
+            }
+        });
     }
 
-    /**游戏切到后台 */
     onHide() {
         if (!this.hasWx) return;
-        wx.onHide(res => {
-            console.log(res);
-        })
+        wx.onHide((_res: any) => { });
     }
 
-    /**获取窗口数据 */
     getWindowInfo() {
         if (!this.hasWx) return null;
         return wx.getWindowInfo();
     }
 
-    showShareMenu() {
+    addOnShowListener(callback: (query: Record<string, string>) => void) {
+        if (callback) {
+            this._onShowCallbacks.push(callback);
+        }
+    }
+
+    setShareProvider(provider: ShareConfigProvider) {
+        this._shareConfigProvider = provider;
+    }
+
+    initShare(title: string, imageUrl: string, timelineTitle?: string) {
+        this._shareImageUrl = imageUrl;
+        this._shareTimelineTitle = timelineTitle || title;
+        this.showShareMenu();
+        this.setupPassiveShareCallbacks();
+    }
+
+    private showShareMenu() {
         if (!this.hasWx) return;
         wx.showShareMenu({
             menus: ['shareAppMessage', 'shareTimeline']
         });
     }
 
-    onShareAppMessage(title: string, imageUrl: string) {
+    private setupPassiveShareCallbacks() {
         if (!this.hasWx) return;
-        wx.onShareAppMessage(() => ({
-            title: title,
-            imageUrl: imageUrl
-        }));
-    }
 
-    onShareTimeline(title: string, imageUrl: string) {
-        if (!this.hasWx) return;
+        wx.onShareAppMessage(() => {
+            const config = this._shareConfigProvider ? this._shareConfigProvider() : null;
+            return {
+                title: config?.title || this._shareTimelineTitle,
+                imageUrl: config?.imageUrl || this._shareImageUrl,
+                query: config?.query || "",
+            };
+        });
+
         wx.onShareTimeline(() => ({
-            title: title,
-            imageUrl: imageUrl
+            title: this._shareTimelineTitle,
+            imageUrl: this._shareImageUrl,
         }));
-    }
-
-    initShare(title: string, imageUrl: string, timelineTitle?: string) {
-        this._shareTitle = title;
-        this._shareImageUrl = imageUrl;
-        this._shareTimelineTitle = timelineTitle || title;
-        this.showShareMenu();
-        this.onShareAppMessage(title, imageUrl);
-        this.onShareTimeline(this._shareTimelineTitle, imageUrl);
     }
 
     async shareAppMessage(title?: string, imageUrl?: string, query?: string): Promise<boolean> {
@@ -104,10 +105,11 @@ export class wxManager extends Singleton implements IPlatform {
 
         return new Promise<boolean>((resolve) => {
             try {
+                const config = this._shareConfigProvider ? this._shareConfigProvider() : null;
                 const shareOptions: any = {
-                    title: title || this._shareTitle,
-                    imageUrl: imageUrl || this._shareImageUrl,
-                    query: query || "",
+                    title: title || config?.title || this._shareTimelineTitle,
+                    imageUrl: imageUrl || config?.imageUrl || this._shareImageUrl,
+                    query: query || config?.query || "",
                     success: () => resolve(true),
                     fail: () => resolve(false),
                 };
@@ -117,6 +119,21 @@ export class wxManager extends Singleton implements IPlatform {
                 resolve(false);
             }
         });
+    }
+
+    private parseQuery(queryStr?: string): Record<string, string> {
+        const result: Record<string, string> = {};
+        if (!queryStr) return result;
+        const pairs = queryStr.split("&");
+        for (const pair of pairs) {
+            const idx = pair.indexOf("=");
+            if (idx > 0) {
+                const key = decodeURIComponent(pair.substring(0, idx));
+                const value = decodeURIComponent(pair.substring(idx + 1));
+                result[key] = value;
+            }
+        }
+        return result;
     }
 
     /** WX广告 */

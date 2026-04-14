@@ -1,4 +1,4 @@
-import { IPlatform, IPlatformAd, IPlatformAdConfig, IRewardedVideoResult } from "./Platform";
+import { IPlatform, IPlatformAd, IPlatformAdConfig, IRewardedVideoResult, ShareConfigProvider } from "./Platform";
 
 export class WebPlatformAd implements IPlatformAd {
     init(_config: IPlatformAdConfig) { }
@@ -42,6 +42,10 @@ export class WebPlatform implements IPlatform {
     }
 
     initShare(_title: string, _imageUrl: string, _timelineTitle?: string) { }
+
+    setShareProvider(_provider: ShareConfigProvider) { }
+
+    addOnShowListener(_callback: (query: Record<string, string>) => void) { }
 
     async shareAppMessage(_title?: string, _imageUrl?: string, _query?: string): Promise<boolean> {
         return true;

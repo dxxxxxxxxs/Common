@@ -25,6 +25,14 @@ export interface IPlatformAd {
     destroyAll(): void;
 }
 
+export interface ShareConfig {
+    title: string;
+    imageUrl?: string;
+    query?: string;
+}
+
+export type ShareConfigProvider = () => ShareConfig;
+
 export interface IPlatform {
     readonly name: string;
     readonly isWxPlatform: boolean;
@@ -36,6 +44,8 @@ export interface IPlatform {
     onHide(): void;
     getWindowInfo(): any;
     initShare(title: string, imageUrl: string, timelineTitle?: string): void;
+    setShareProvider(provider: ShareConfigProvider): void;
+    addOnShowListener(callback: (query: Record<string, string>) => void): void;
     shareAppMessage(title?: string, imageUrl?: string, query?: string): Promise<boolean>;
     postMaxLevel(level: number): void;
     showRank(): void;
