@@ -55,6 +55,11 @@ export default class CCTools extends cc.Component {
 
     /**添加点击事件(已防止重复注册，但是还是需要在destory的时候取消点击事件) */
     static fixedClick(node: cc.Node, callback: Function, target: any) {
+        // 容错：节点未绑定时直接跳过，避免整个 UI 初始化被中断
+        if (!node || !cc.isValid(node)) {
+            console.warn("CCTools.fixedClick: 传入的 node 为空或已销毁，已跳过注册");
+            return;
+        }
         let call = () => { Game.Audio.playSound("click", "Audio"); }
         node.off("click", callback, target);
         node.off("click", call, target);
@@ -180,6 +185,7 @@ export default class CCTools extends cc.Component {
      * @param node 需要控制点击事件的节点 
      */
     static controlClicks(node: cc.Node, state: boolean) {
+        if (!node || !cc.isValid(node)) return;
         const button = node.getComponent(cc.Button);
         if (button) {
             button.interactable = state;
