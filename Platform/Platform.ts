@@ -23,6 +23,17 @@ export interface IPlatformAd {
     showBanner(style?: any): void;
     hideBanner(): void;
     destroyAll(): void;
+
+    /**
+     * 主动预加载激励视频。可在"可能触发广告的页面"打开时主动调用，
+     * 让 load 发生在用户点按钮之前，展示时就不用再等。
+     */
+    preloadRewardedVideo(): void;
+
+    /**
+     * 小游戏从后台切回前台时调用，用于重置可能已过期的广告状态、重新 load。
+     */
+    onGameShow(): void;
 }
 
 export interface ShareConfig {

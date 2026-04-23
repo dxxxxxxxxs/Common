@@ -24,6 +24,10 @@ export class WebPlatformAd implements IPlatformAd {
     hideBanner() { }
 
     destroyAll() { }
+
+    preloadRewardedVideo() { }
+
+    onGameShow() { }
 }
 
 export class WebPlatform implements IPlatform {

@@ -37,6 +37,9 @@ export class wxManager extends Singleton implements IPlatform {
         if (!this.hasWx) return;
         wx.onShow((res: any) => {
             const query = this.parseQuery(res?.query);
+            // 切回前台时，顺便让广告管理器给可能过期的激励视频素材发一次 reload，
+            // 避免玩家切回来立刻点按钮又要等 load。
+            try { this.Ad.onGameShow(); } catch (e) { console.warn("Ad.onGameShow error", e); }
             for (const cb of this._onShowCallbacks) {
                 try { cb(query); } catch (e) { console.error("onShow callback error", e); }
             }
